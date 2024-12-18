@@ -452,9 +452,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // 添加 AI 调用函数
+    // 添加设置相关的常量和函数
+    const DEFAULT_BASE_URL = 'https://api.siliconflow.cn/v1/chat/completions';
+    const DEFAULT_API_KEY = 'sk-apapjllgqaosvrudsodksyzhtxchkscuoswpofrxwrrrugcz';
+    const DEFAULT_MODEL = 'Qwen/Qwen2.5-7B-Instruct';
+
+    // 从localStorage获取设置
+    function getSettings() {
+        return {
+            apiKey: localStorage.getItem('apiKey') || DEFAULT_API_KEY,
+            baseUrl: localStorage.getItem('baseUrl') || DEFAULT_BASE_URL,
+            model: localStorage.getItem('model') || DEFAULT_MODEL
+        };
+    }
+
+    // 保存设置到localStorage
+    function saveSettings(apiKey, baseUrl, model) {
+        localStorage.setItem('apiKey', apiKey);
+        localStorage.setItem('baseUrl', baseUrl);
+        localStorage.setItem('model', model);
+    }
+
+    // 修改generateAIBlessing函数中的API调用部分
     async function generateAIBlessing(relation, subRelation, name, style, wordCount) {
         try {
+            const settings = getSettings();
             const styleConfig = styleConfigs[style];
             const basePrompt = styleConfig.systemPrompt;
 
@@ -470,14 +492,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 ${basePrompt}`;
 
-            const response = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
+            const response = await fetch(settings.baseUrl, {
                 method: 'POST',
                 headers: {
-                    'Authorization': 'Bearer sk-apapjllgqaosvrudsodksyzhtxchkscuoswpofrxwrrrugcz',
+                    'Authorization': `Bearer ${settings.apiKey}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    model: "Qwen/Qwen2.5-7B-Instruct",
+                    model: settings.model,
                     messages: [
                         {
                             role: "system",
@@ -651,5 +673,64 @@ ${basePrompt}`;
         setTimeout(() => {
             toast.classList.remove('show');
         }, duration);
+    }
+
+    // 添加设置对话框相关的代码
+    function showSettingsDialog() {
+        const dialog = document.querySelector('.settings-dialog');
+        const settings = getSettings();
+        
+        // 填充当前设置
+        document.getElementById('apiKey').value = settings.apiKey;
+        document.getElementById('baseUrl').value = settings.baseUrl;
+        document.getElementById('model').value = settings.model;
+        
+        // 初始化模型描述
+        updateModelDescription();
+        
+        // 添加模型选择变化事件监听
+        const modelSelect = document.getElementById('model');
+        modelSelect.addEventListener('change', updateModelDescription);
+        
+        dialog.style.display = 'flex';
+        setTimeout(() => dialog.classList.add('active'), 10);
+        
+        const saveBtn = dialog.querySelector('.save-btn');
+        const closeBtn = dialog.querySelector('.close-btn');
+        
+        saveBtn.onclick = () => {
+            const apiKey = document.getElementById('apiKey').value;
+            const baseUrl = document.getElementById('baseUrl').value;
+            const model = document.getElementById('model').value;
+            saveSettings(apiKey, baseUrl, model);
+            showToast('✨ 设置已保存');
+            dialog.classList.remove('active');
+            setTimeout(() => dialog.style.display = 'none', 300);
+        };
+        
+        closeBtn.onclick = () => {
+            dialog.classList.remove('active');
+            setTimeout(() => dialog.style.display = 'none', 300);
+        };
+    }
+
+    // 添加设置按钮事件监听
+    const settingsTrigger = document.querySelector('.settings-trigger');
+    settingsTrigger.addEventListener('click', showSettingsDialog);
+
+    // 添加模型描述映射
+    const modelDescriptions = {
+        'Qwen/Qwen2.5-7B-Instruct': '阿里发布的最新模型中的小参数版本',
+        'google/gemma-2-9b-it': 'Google 开发的轻量级开放模型，仅解码器的大型语言模型。参数量 9B，由 8 万亿个 tokens 训练而成',
+        'AIDC-AI/Marco-o1': '阿里推出的开放推理模型。采用了思维链（CoT）微调、蒙特卡洛树搜索（MCTS）以及反思机制等推理策略',
+        '01-ai/Yi-1.5-9B-Chat-16K': '零一万物推出的开源模型。Yi-1.5 是 Yi 的升级版本，训练参数量为9B'
+    };
+
+    // 添加更新模型描述的函数
+    function updateModelDescription() {
+        const select = document.getElementById('model');
+        const description = document.querySelector('.model-description');
+        const selectedModel = select.value;
+        description.textContent = modelDescriptions[selectedModel];
     }
 }); 
