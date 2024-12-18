@@ -445,7 +445,7 @@ document.addEventListener('DOMContentLoaded', () => {
 要求：
 1. 融入传统文化元素
 2. 可以使用典故或谚语
-3. 体现龙年特色
+3. 体现蛇年特色
 4. 保持文言与白话的优雅结合
 5. 突出传统节日的仪式感`,
             temperature: 0.7
@@ -458,15 +458,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const styleConfig = styleConfigs[style];
             const basePrompt = styleConfig.systemPrompt;
 
-            const prompt = `你现在要写一段新年祝福给${name}（你的${subRelation}）。
-注意事项：
+            const prompt = `你现在要写一段蛇年祝福语给${name}（你的${subRelation}）。
+要求：
 1. 不要出现"尊敬的"、"此致敬礼"等客套话
 2. 直接用称呼开头，像写给亲近的人一样自然
 3. 字数要严格控制在${wordCount}字以内
 4. 要符合写给${subRelation}的身份和语气
-5. 要像日常交谈一样自然流畅
-6. 避免过于生硬的祝福套话
-7. 字数限制很重要，请务必遵守
+5. 你的受众是有文化的知识分子，文化水平都是研究生级别
+6. 要像日常交谈一样自然流畅，避免生硬的祝福套话
+7. 尽量用多的emoji表情，表达恭贺新年的喜悦心情
 
 ${basePrompt}`;
 
